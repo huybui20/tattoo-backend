@@ -5,21 +5,21 @@ exports.getCollections = async (req, res) => {
     try {
         const collections = await Collection.findAll({
         where: { userId: req.user.id },
-        include: [
-            {
-            model: SavedDesign,
             include: [
                 {
-                model: TattooResult,
-                include: [
-                    { model: Style },
-                    { model: User, as: 'creator', attributes: ['username'] }
-                ]
+                    model: SavedDesign,
+                    include: [
+                        {
+                        model: TattooResult,
+                            include: [
+                                { model: Style },
+                                { model: User, as: 'creator', attributes: ['username'] }
+                            ]
+                        }
+                    ]
                 }
-            ]
-            }
-        ],
-        order: [['createdAt', 'DESC']]
+            ],
+            order: [['createdAt', 'DESC']]
         });
         res.json(collections);
     } catch (error) {
@@ -40,10 +40,10 @@ exports.getCollection = async (req, res) => {
             include: [
                 {
                 model: TattooResult,
-                include: [
-                    { model: Style },
-                    { model: User, as: 'creator', attributes: ['username'] }
-                ]
+                    include: [
+                        { model: Style },
+                        { model: User, as: 'creator', attributes: ['username'] }
+                    ]
                 }
             ]
             }
@@ -51,7 +51,7 @@ exports.getCollection = async (req, res) => {
         });
 
         if (!collection) {
-        return res.status(404).json({ message: 'Collection not found' });
+            return res.status(404).json({ message: 'Collection not found' });
         }
 
         res.json(collection);
@@ -65,8 +65,8 @@ exports.createCollection = async (req, res) => {
         const { name } = req.body;
 
         const collection = await Collection.create({
-        name,
-        userId: req.user.id
+            name,
+            userId: req.user.id
         });
 
         res.status(201).json(collection);
@@ -86,7 +86,7 @@ exports.updateCollection = async (req, res) => {
         });
 
         if (!collection) {
-        return res.status(404).json({ message: 'Collection not found' });
+            return res.status(404).json({ message: 'Collection not found' });
         }
 
         await collection.update({ name });
@@ -99,14 +99,14 @@ exports.updateCollection = async (req, res) => {
 exports.deleteCollection = async (req, res) => {
     try {
         const collection = await Collection.findOne({
-        where: {
-            id: req.params.id,
-            userId: req.user.id
-        }
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
 
         if (!collection) {
-        return res.status(404).json({ message: 'Collection not found' });
+            return res.status(404).json({ message: 'Collection not found' });
         }
 
         await collection.destroy();

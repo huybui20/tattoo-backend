@@ -17,7 +17,8 @@ const Style = sequelize.define('Style', {
         allowNull: true
     },
     imageUrl: {
-        type: DataTypes.STRING
+        type: DataTypes.STRING,
+        allowNull: true
     }
 });
 

@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const User = require('../models/User');
+const { User } = require('../models');
 
 const protect = async (req, res, next) => {
     let token;
@@ -7,16 +7,32 @@ const protect = async (req, res, next) => {
     if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
         try {
             token = req.headers.authorization.split(' ')[1];
+            console.log('Token received:', token);
+            console.log('JWT_SECRET:', process.env.JWT_SECRET);
+            
             const decoded = jwt.verify(token, process.env.JWT_SECRET);
-            req.user = await User.findById(decoded.id).select('-password');
+            console.log('Decoded token:', decoded);
+            
+            req.user = await User.findByPk(decoded.id, {
+                attributes: { exclude: ['password'] }
+            });
+            
+            if (!req.user) {
+                console.log('User not found for id:', decoded.id);
+                return res.status(401).json({ message: 'User not found' });
+            }
+            
+            console.log('User authenticated:', req.user.id);
             next();
         } catch (error) {
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('Token verification error:', error.message);
+            return res.status(401).json({ 
+                message: 'Not authorized, token failed',
+                error: process.env.NODE_ENV === 'development' ? error.message : undefined
+            });
         }
-    }
-
-    if (!token) {
-        res.status(401).json({ message: 'Not authorized, no token' });
+    } else {
+        return res.status(401).json({ message: 'Not authorized, no token' });
     }
 };
 

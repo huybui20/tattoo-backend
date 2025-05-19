@@ -11,7 +11,7 @@ const {
     removeDesignFromCollection
 } = require('../controllers/collectionController');
 
-// All collection routes are protected
+// All collection routes require authentication
 router.use(protect);
 
 router.get('/', getCollections);

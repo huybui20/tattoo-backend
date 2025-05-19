@@ -3,8 +3,8 @@ const { sequelize } = require('../config/db');
 
 const SavedDesign = sequelize.define('SavedDesign', {
     id: {
-        type: DataTypes.UUID,
-        defaultValue: DataTypes.UUIDV4,
+        type: DataTypes.BIGINT,
+        autoIncrement: true,
         primaryKey: true
     }
 });

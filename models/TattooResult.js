@@ -18,9 +18,6 @@ const TattooResult = sequelize.define('TattooResult', {
     negativePrompt: {
         type: DataTypes.TEXT
     },
-    referenceImageData: {
-        type: DataTypes.TEXT
-    },
     width: {
         type: DataTypes.INTEGER,
         defaultValue: 512
@@ -32,10 +29,6 @@ const TattooResult = sequelize.define('TattooResult', {
     scheduler: {
         type: DataTypes.STRING,
         defaultValue: 'K_EULER'
-    },
-    numOutputs: {
-        type: DataTypes.INTEGER,
-        defaultValue: 1
     },
     guidanceScale: {
         type: DataTypes.FLOAT,
@@ -52,9 +45,6 @@ const TattooResult = sequelize.define('TattooResult', {
     imageUrl: {
         type: DataTypes.STRING
     },
-    filename: {
-        type: DataTypes.STRING
-    }
 });
 
 module.exports = TattooResult;
