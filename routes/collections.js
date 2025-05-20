@@ -3,7 +3,7 @@ const router = express.Router();
 const { protect } = require('../middleware/auth');
 const {
     getCollections,
-    getCollection,
+    getCollectionById,
     createCollection,
     updateCollection,
     deleteCollection,
@@ -15,7 +15,7 @@ const {
 router.use(protect);
 
 router.get('/', getCollections);
-router.get('/:id', getCollection);
+router.get('/:id', getCollectionById);
 router.post('/', createCollection);
 router.put('/:id', updateCollection);
 router.delete('/:id', deleteCollection);

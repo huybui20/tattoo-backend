@@ -9,7 +9,6 @@ const authorize = (...roles) => {
                 message: 'Not authorized to access this resource' 
             });
         }
-        
         next();
     };
 };

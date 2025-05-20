@@ -1,7 +1,7 @@
 const axios = require('axios');
 const fs = require('fs').promises;
 const path = require('path');
-
+const cloudinary = require('cloudinary').v2;
 const downloadAndSaveImage = async (imageUrl, index, basepath) => {
     try {
         // Create uploads directory if it doesn't exist
@@ -22,7 +22,18 @@ const downloadAndSaveImage = async (imageUrl, index, basepath) => {
     } catch (error) {
         throw new Error(`Failed to download and save image: ${error.message}`);
     }
+};  
+const uploadToCloudinary = async (imageUrl) => {
+    try {
+        const result = await cloudinary.uploader.upload(imageUrl, {
+            folder: 'tattoo-designs',
+            resource_type: 'image'
+        });
+        return result.secure_url;
+    } catch (error) {
+        throw new Error(`Cloudinary upload failed: ${error.message}`);
+    }
 };
 module.exports = {
-    downloadAndSaveImage
+    downloadAndSaveImage,uploadToCloudinary
 };

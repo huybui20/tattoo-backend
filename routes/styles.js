@@ -4,7 +4,7 @@ const { protect } = require('../middleware/auth');
 const authorize = require('../middleware/authorize');
 const {
     getStyles,
-    getStyle,
+    getStyleById,
     createStyle,
     updateStyle,
     deleteStyle
@@ -12,7 +12,7 @@ const {
 
 // Public routes
 router.get('/', getStyles);
-router.get('/:id', getStyle);
+router.get('/:id', getStyleById);
 
 // Admin routes
 router.post('/', protect, authorize('admin'), createStyle);

@@ -3,7 +3,7 @@ const Replicate = require('replicate');
 const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN
 });
-const { downloadAndSaveImage } = require('../utils/imageUtils');
+const {uploadToCloudinary} = require('../utils/imageUtils');
 const { sequelize } = require('../config/db');
 const { v4: uuidv4 } = require('uuid');
 const { readFile } = require("node:fs/promises");
@@ -51,7 +51,6 @@ exports.generateTattoo = async (req, res) => {
 
         let image = referenceImage;
         if (req.file) {
-            
             const imagePath = req.file.path;
             image = await readFile(imagePath);
         } else if (referenceImage) {
@@ -65,20 +64,19 @@ exports.generateTattoo = async (req, res) => {
             replicateInput.image = image;
             replicateInput.strength = strength;
         }
-
         const output = await replicate.run(
             "windxtech/tattoo-generator:0fe0fd450695b2fd99305d27a07ee6349943c200dc849d07633a98c24daef9a8",
             { input: replicateInput }
         );
         const result = {};
-        const uniqueId = uuidv4();
-        const basepath= `${Date.now()}_${uniqueId}`;
+        // const uniqueId = uuidv4();
+        // const basepath= `${Date.now()}_${uniqueId}`;
         for (const [index, item] of Object.entries(output)) {
-            const localImagePath = await downloadAndSaveImage(item, index, basepath);
-
+            const cloudinaryUrl = await uploadToCloudinary(item);
+            // const localImagePath = await downloadAndSaveImage(item, index, basepath);
             const tattooResult = await TattooResult.create({
                 prompt,
-                StyleId: style.id,
+                styleId: style.id,
                 mode,
                 negativePrompt,
                 width,
@@ -89,7 +87,8 @@ exports.generateTattoo = async (req, res) => {
                 numInferenceSteps,
                 strength,
                 creatorId: req.user?.id || null,
-                imageUrl: localImagePath,
+                imageUrl: cloudinaryUrl,
+                // imageUrl: localImagePath,
             }, { transaction });
             result[index] = tattooResult;
         }
@@ -105,7 +104,7 @@ exports.getTattooResults = async (req, res) => {
     try {
         const tattooResults = await TattooResult.findAll({
             include: [
-                { model: Style },
+                { model: Style, as: 'style' , attributes: ['name']},
                 { model: User, as: 'creator', attributes: ['username'] }
             ],
             order: [['createdAt', 'DESC']]
@@ -120,7 +119,7 @@ exports.getTattooById = async (req, res) => {
     try {
         const tattooResult = await TattooResult.findByPk(req.params.id, {
             include: [
-                { model: Style },
+                { model: Style, as: 'style' , attributes: ['name']},
                 { model: User, as: 'creator', attributes: ['username'] }
             ]
         });
@@ -191,15 +190,30 @@ exports.getSavedDesigns = async (req, res) => {
         include: [
             {
             model: TattooResult,
-                include: [
-                    { model: Style },
-                    { model: User, as: 'creator', attributes: ['username'] }
-                ]
+            as: 'tattooResult',
+            attributes: ['id'],
             }
         ],
         order: [['createdAt', 'DESC']]
         });
         res.json(savedDesigns);
+    } catch (error) {
+        res.status(400).json({ message: error.message });
+    }
+};
+exports.getSavedDesignsById = async(req,res) =>{
+    try {
+        const savedDesign = await SavedDesign.findByPk(req.params.id, {
+            include: [
+                { model: TattooResult, as: 'tattooResult', attributes: ['id'] },
+                { model: User, as: 'user', attributes: ['username'] }
+            ]
+        });
+
+        if (!savedDesign) {
+            return res.status(404).json({ message: 'Saved Design not found' });
+        }
+        res.json(savedDesign);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }

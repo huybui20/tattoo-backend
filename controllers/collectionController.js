@@ -6,18 +6,7 @@ exports.getCollections = async (req, res) => {
         const collections = await Collection.findAll({
         where: { userId: req.user.id },
             include: [
-                {
-                    model: SavedDesign,
-                    include: [
-                        {
-                        model: TattooResult,
-                            include: [
-                                { model: Style },
-                                { model: User, as: 'creator', attributes: ['username'] }
-                            ]
-                        }
-                    ]
-                }
+                {model: SavedDesign, as: 'savedDesign', attributes: ['id'],}
             ],
             order: [['createdAt', 'DESC']]
         });
@@ -27,27 +16,16 @@ exports.getCollections = async (req, res) => {
     }
 };
 
-exports.getCollection = async (req, res) => {
+exports.getCollectionById = async (req, res) => {
     try {
         const collection = await Collection.findOne({
-        where: {
-            id: req.params.id,
-            userId: req.user.id
-        },
-        include: [
-            {
-            model: SavedDesign,
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            },
             include: [
-                {
-                model: TattooResult,
-                    include: [
-                        { model: Style },
-                        { model: User, as: 'creator', attributes: ['username'] }
-                    ]
-                }
+                {model: SavedDesign, as: 'savedDesign', attributes: ['id']}
             ]
-            }
-        ]
         });
 
         if (!collection) {
@@ -71,7 +49,11 @@ exports.createCollection = async (req, res) => {
 
         res.status(201).json(collection);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        console.error('Error creating collection:', error);
+        res.status(400).json({ 
+            message: error.message,
+            details: error.errors ? error.errors.map(e => e.message) : null
+        });
     }
 };
 
@@ -79,10 +61,10 @@ exports.updateCollection = async (req, res) => {
     try {
         const { name } = req.body;
         const collection = await Collection.findOne({
-        where: {
-            id: req.params.id,
-            userId: req.user.id
-        }
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
 
         if (!collection) {
@@ -120,25 +102,25 @@ exports.addDesignToCollection = async (req, res) => {
     try {
         const { designId } = req.body;
         const collection = await Collection.findOne({
-        where: {
-            id: req.params.id,
-            userId: req.user.id
-        }
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
 
         if (!collection) {
-        return res.status(404).json({ message: 'Collection not found' });
+            return res.status(404).json({ message: 'Collection not found' });
         }
 
         const savedDesign = await SavedDesign.findOne({
-        where: {
-            id: designId,
-            userId: req.user.id
-        }
+            where: {
+                id: designId,
+                userId: req.user.id
+            }
         });
 
         if (!savedDesign) {
-        return res.status(404).json({ message: 'Saved design not found' });
+            return res.status(404).json({ message: 'Saved design not found' });
         }
 
         await collection.addSavedDesign(savedDesign);

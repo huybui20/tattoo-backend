@@ -10,7 +10,7 @@ exports.getStyles = async (req, res) => {
     }
 };
 
-exports.getStyle = async (req, res) => {
+exports.getStyleById = async (req, res) => {
     try {
         const style = await Style.findByPk(req.params.id);
         if (!style) {

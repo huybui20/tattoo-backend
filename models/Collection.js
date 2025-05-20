@@ -10,7 +10,17 @@ const Collection = sequelize.define('Collection', {
     name: {
         type: DataTypes.STRING,
         allowNull: false
+    },
+    userId: {
+        type: DataTypes.BIGINT,
+        allowNull: false,
+        references: {
+            model: 'Users',
+            key: 'id'
+        }
     }
+}, {
+    timestamps: true
 });
 
 module.exports = Collection;
