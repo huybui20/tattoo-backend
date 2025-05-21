@@ -68,19 +68,10 @@ export const login = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-// export const logout = (req, res, next) => {
-//     req.logout(err => {
-//         if (err) return next(err);
-//         req.session.destroy(); // optional: destroy session data
-//         res.clearCookie('connect.sid'); // remove session cookie
-//         res.status(200).json({ message: 'Logout successful' });
-//     });
-// };
 export const logout = (req, res) => {
     res.status(200).json({ message: 'Logged out (JWT token discarded on client)' });
 };
-
-export const socialAuthSuccess = async (req, res) => {
+exports.socialAuthSuccess = async (req, res) =>{
     if (req.user) {
         res.status(200).json({
             status: 'success',
