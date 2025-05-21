@@ -1,25 +1,27 @@
-const { TattooResult, Style, User, SavedDesign } = require('../models');
-const Replicate = require('replicate');
+import { TattooResult, Style, User, SavedDesign } from '../models/index.js';
+import Replicate from 'replicate';
+import { uploadToCloudinary } from '../utils/imageUtils.js';
+import { sequelize } from '../config/db.js';
+import { v4 as uuidv4 } from 'uuid';
+import { readFile } from 'node:fs/promises';
+
+const DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, disfigured, ugly, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, mutated hands and fingers, disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation";
+
 const replicate = new Replicate({
     auth: process.env.REPLICATE_API_TOKEN
 });
-const {uploadToCloudinary} = require('../utils/imageUtils');
-const { sequelize } = require('../config/db');
-const { v4: uuidv4 } = require('uuid');
-const { readFile } = require("node:fs/promises");
-const DEFAULT_NEGATIVE_PROMPT = "blurry, low quality, distorted, disfigured, ugly, bad anatomy, wrong anatomy, extra limb, missing limb, floating limbs, mutated hands and fingers, disconnected limbs, mutation, mutated, ugly, disgusting, blurry, amputation";
 
-exports.generateTattoo = async (req, res) => {
+export const generateTattoo = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const {
             prompt,
             styleName,
-            negativePrompt = DEFAULT_NEGATIVE_PROMPT,
+            negativePrompt,
             width = 512,
             height = 512,
             scheduler = 'K_EULER',
-            numOutputs = 1,
+            numOutputs = 2,
             guidanceScale = 7.0,
             numInferenceSteps = 30,
             strength = 0.6,
@@ -42,6 +44,7 @@ exports.generateTattoo = async (req, res) => {
             negative_prompt: negativePrompt,
             width,
             height,
+            style: styleName,
             scheduler,
             num_outputs: numOutputs,
             guidance_scale: guidanceScale,
@@ -69,11 +72,9 @@ exports.generateTattoo = async (req, res) => {
             { input: replicateInput }
         );
         const result = {};
-        // const uniqueId = uuidv4();
-        // const basepath= `${Date.now()}_${uniqueId}`;
         for (const [index, item] of Object.entries(output)) {
             const cloudinaryUrl = await uploadToCloudinary(item);
-            // const localImagePath = await downloadAndSaveImage(item, index, basepath);
+            // const cloudinaryUrl ="fefesfesfesfe";
             const tattooResult = await TattooResult.create({
                 prompt,
                 styleId: style.id,
@@ -82,13 +83,11 @@ exports.generateTattoo = async (req, res) => {
                 width,
                 height,
                 scheduler,
-                numOutputs,
                 guidanceScale,
                 numInferenceSteps,
                 strength,
                 creatorId: req.user?.id || null,
                 imageUrl: cloudinaryUrl,
-                // imageUrl: localImagePath,
             }, { transaction });
             result[index] = tattooResult;
         }
@@ -99,12 +98,11 @@ exports.generateTattoo = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-
-exports.getTattooResults = async (req, res) => {
+export const getTattooResults = async (req, res) => {
     try {
         const tattooResults = await TattooResult.findAll({
             include: [
-                { model: Style, as: 'style' , attributes: ['name']},
+                { model: Style, as: 'style', attributes: ['name'] },
                 { model: User, as: 'creator', attributes: ['username'] }
             ],
             order: [['createdAt', 'DESC']]
@@ -115,11 +113,11 @@ exports.getTattooResults = async (req, res) => {
     }
 };
 
-exports.getTattooById = async (req, res) => {
+export const getTattooById = async (req, res) => {
     try {
         const tattooResult = await TattooResult.findByPk(req.params.id, {
             include: [
-                { model: Style, as: 'style' , attributes: ['name']},
+                { model: Style, as: 'style', attributes: ['name'] },
                 { model: User, as: 'creator', attributes: ['username'] }
             ]
         });
@@ -134,7 +132,7 @@ exports.getTattooById = async (req, res) => {
     }
 };
 
-exports.saveDesign = async (req, res) => {
+export const saveDesign = async (req, res) => {
     try {
         const tattooResult = await TattooResult.findByPk(req.params.id);
         if (!tattooResult) {
@@ -163,7 +161,7 @@ exports.saveDesign = async (req, res) => {
     }
 };
 
-exports.unsaveDesign = async (req, res) => {
+export const unsaveDesign = async (req, res) => {
     try {
         const savedDesign = await SavedDesign.findOne({
             where: {
@@ -173,7 +171,7 @@ exports.unsaveDesign = async (req, res) => {
         });
 
         if (!savedDesign) {
-        return res.status(404).json({ message: 'Saved design not found' });
+            return res.status(404).json({ message: 'Saved design not found' });
         }
 
         await savedDesign.destroy();
@@ -183,25 +181,26 @@ exports.unsaveDesign = async (req, res) => {
     }
 };
 
-exports.getSavedDesigns = async (req, res) => {
+export const getSavedDesigns = async (req, res) => {
     try {
         const savedDesigns = await SavedDesign.findAll({
-        where: { userId: req.user.id },
-        include: [
-            {
-            model: TattooResult,
-            as: 'tattooResult',
-            attributes: ['id'],
-            }
-        ],
-        order: [['createdAt', 'DESC']]
+            where: { userId: req.user.id },
+            include: [
+                {
+                    model: TattooResult,
+                    as: 'tattooResult',
+                    attributes: ['imageUrl'],
+                }
+            ],
+            order: [['createdAt', 'DESC']]
         });
         res.json(savedDesigns);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
-exports.getSavedDesignsById = async(req,res) =>{
+
+export const getSavedDesignsById = async (req, res) => {
     try {
         const savedDesign = await SavedDesign.findByPk(req.params.id, {
             include: [

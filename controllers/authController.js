@@ -1,8 +1,8 @@
-const { User } = require('../models');
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
-const { Op } = require('sequelize');
-const { sequelize } = require('../config/db');
+import { User } from '../models/index.js';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import { Op } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 const generateToken = (id) => {
     return jwt.sign({ id }, process.env.JWT_SECRET, {
@@ -10,17 +10,12 @@ const generateToken = (id) => {
     });
 };
 
-exports.register = async (req, res) => {
+export const register = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
-        const { username, email, password} = req.body;
+        const { username, email, password } = req.body;
 
-        const userExists = await User.findOne({
-            where: {
-                [Op.or]: [{ email }, { username }]
-            },
-            transaction
-        });
+        const userExists = await User.findOne({ where: { email } });
 
         if (userExists) {
             await transaction.rollback();
@@ -50,7 +45,7 @@ exports.register = async (req, res) => {
     }
 };
 
-exports.login = async (req, res) => {
+export const login = async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -73,7 +68,19 @@ exports.login = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
-exports.socialAuthSuccess = async (req, res) =>{
+// export const logout = (req, res, next) => {
+//     req.logout(err => {
+//         if (err) return next(err);
+//         req.session.destroy(); // optional: destroy session data
+//         res.clearCookie('connect.sid'); // remove session cookie
+//         res.status(200).json({ message: 'Logout successful' });
+//     });
+// };
+export const logout = (req, res) => {
+    res.status(200).json({ message: 'Logged out (JWT token discarded on client)' });
+};
+
+export const socialAuthSuccess = async (req, res) => {
     if (req.user) {
         res.status(200).json({
             status: 'success',
@@ -88,29 +95,29 @@ exports.socialAuthSuccess = async (req, res) =>{
         });
     }
 };
-exports.socialAuthFailed = async (req, res) =>{
-    app.get('/login/failed', (req, res) => {
-        res.status(401).json({
-            status: 'error',
-            message: 'Login failed'
-        });
+
+export const socialAuthFailed = async (req, res) => {
+    res.status(401).json({
+        status: 'error',
+        message: 'Login failed'
     });
 };
-exports.getProfile = async (req, res) => {
+
+export const getProfile = async (req, res) => {
     try {
         const user = await User.findByPk(req.user.id, {
             attributes: { exclude: ['password'] }
         });
-        res.json(user);
+        res.status(200).json(user);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
 
-exports.updateProfile = async (req, res) => {
+export const updateProfile = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
-        const { firstName, lastName, email } = req.body;
+        const { userName,firstName, lastName, email } = req.body;
         const user = await User.findByPk(req.user.id, { transaction });
 
         if (email && email !== user.email) {
@@ -125,6 +132,7 @@ exports.updateProfile = async (req, res) => {
         }
 
         await user.update({
+            username: userName || user.username,
             firstName: firstName || user.firstName,
             lastName: lastName || user.lastName,
             email: email || user.email
@@ -145,7 +153,7 @@ exports.updateProfile = async (req, res) => {
     }
 };
 
-exports.changePassword = async (req, res) => {
+export const changePassword = async (req, res) => {
     const transaction = await sequelize.transaction();
     try {
         const { currentPassword, newPassword } = req.body;

@@ -1,11 +1,11 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
 
 // Import all route modules
-const authRoutes = require('./auth');
-const styleRoutes = require('./styles');
-const tattooRoutes = require('./tattoos');
-const collectionRoutes = require('./collections');
+import authRoutes from './auth.js';
+import styleRoutes from './styles.js';
+import tattooRoutes from './tattoos.js';
+import collectionRoutes from './collections.js';
 // Mount routes
 router.use('/auth', authRoutes);
 router.use('/styles', styleRoutes);
@@ -16,4 +16,4 @@ router.get('/health', (req, res) => {
     res.status(200).json({ status: 'OK', message: 'Server is running' });
 });
 
-module.exports = router;
+export default router;

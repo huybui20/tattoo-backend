@@ -1,8 +1,8 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { protect } = require('../middleware/auth');
-const authorize = require('../middleware/authorize');
-const {
+import { protect } from '../middleware/auth.js';
+import { authorize } from '../middleware/authorize.js';
+import {
     generateTattoo,
     getTattooResults,
     getTattooById,
@@ -10,19 +10,18 @@ const {
     unsaveDesign,
     getSavedDesigns,
     getSavedDesignsById,
-} = require('../controllers/tattooController');
+} from '../controllers/tattooController.js';
 
 // Public routes
 router.get('/', getTattooResults);
 router.get('/:id', getTattooById);
-
+router.post('/generate', generateTattoo);
 // User routes
-router.post('/generate', protect, generateTattoo);
 router.post('/:id/save', protect, saveDesign);
 router.delete('/:id/unsave', protect, unsaveDesign);
-router.get('/saved/designs', protect, getSavedDesigns);
-router.get('/saved/designs/:id', protect, getSavedDesignsById);
+router.get('/savedDesigns', protect, getSavedDesigns);
+router.get('/savedDesigns/:id', protect, getSavedDesignsById);
 // Admin routes
 router.delete('/:id', protect, authorize('admin'), async (req, res) => {});
 
-module.exports = router;
+export default router;

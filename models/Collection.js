@@ -1,6 +1,5 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
-
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/db.js';
 const Collection = sequelize.define('Collection', {
     id: {
         type: DataTypes.BIGINT,
@@ -23,4 +22,4 @@ const Collection = sequelize.define('Collection', {
     timestamps: true
 });
 
-module.exports = Collection;
+export default Collection;

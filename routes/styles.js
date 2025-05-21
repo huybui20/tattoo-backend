@@ -1,14 +1,14 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { protect } = require('../middleware/auth');
-const authorize = require('../middleware/authorize');
-const {
+import { protect } from '../middleware/auth.js';
+import { authorize } from '../middleware/authorize.js';
+import {
     getStyles,
     getStyleById,
     createStyle,
     updateStyle,
     deleteStyle
-} = require('../controllers/styleController');
+} from '../controllers/styleController.js';
 
 // Public routes
 router.get('/', getStyles);
@@ -19,4 +19,4 @@ router.post('/', protect, authorize('admin'), createStyle);
 router.put('/:id', protect, authorize('admin'), updateStyle);
 router.delete('/:id', protect, authorize('admin'), deleteStyle);
 
-module.exports = router;
+export default router;

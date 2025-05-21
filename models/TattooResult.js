@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 const TattooResult = sequelize.define('TattooResult', {
     id: {
@@ -47,4 +47,4 @@ const TattooResult = sequelize.define('TattooResult', {
     },
 });
 
-module.exports = TattooResult;
+export default TattooResult;

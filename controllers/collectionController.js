@@ -1,12 +1,12 @@
-const { Collection, SavedDesign, TattooResult, Style, User } = require('../models');
-const { Op } = require('sequelize');
+import { Collection, SavedDesign, TattooResult, Style, User } from '../models/index.js';
+import { Op } from 'sequelize';
 
-exports.getCollections = async (req, res) => {
+export const getCollections = async (req, res) => {
     try {
         const collections = await Collection.findAll({
-        where: { userId: req.user.id },
+            where: { userId: req.user.id },
             include: [
-                {model: SavedDesign, as: 'savedDesign', attributes: ['id'],}
+                { model: SavedDesign, as: 'savedDesign', attributes: ['id'] }
             ],
             order: [['createdAt', 'DESC']]
         });
@@ -16,7 +16,7 @@ exports.getCollections = async (req, res) => {
     }
 };
 
-exports.getCollectionById = async (req, res) => {
+export const getCollectionById = async (req, res) => {
     try {
         const collection = await Collection.findOne({
             where: {
@@ -24,7 +24,7 @@ exports.getCollectionById = async (req, res) => {
                 userId: req.user.id
             },
             include: [
-                {model: SavedDesign, as: 'savedDesign', attributes: ['id']}
+                { model: SavedDesign, as: 'savedDesign', attributes: ['id'] }
             ]
         });
 
@@ -38,7 +38,7 @@ exports.getCollectionById = async (req, res) => {
     }
 };
 
-exports.createCollection = async (req, res) => {
+export const createCollection = async (req, res) => {
     try {
         const { name } = req.body;
 
@@ -57,7 +57,7 @@ exports.createCollection = async (req, res) => {
     }
 };
 
-exports.updateCollection = async (req, res) => {
+export const updateCollection = async (req, res) => {
     try {
         const { name } = req.body;
         const collection = await Collection.findOne({
@@ -78,7 +78,7 @@ exports.updateCollection = async (req, res) => {
     }
 };
 
-exports.deleteCollection = async (req, res) => {
+export const deleteCollection = async (req, res) => {
     try {
         const collection = await Collection.findOne({
             where: {
@@ -98,7 +98,7 @@ exports.deleteCollection = async (req, res) => {
     }
 };
 
-exports.addDesignToCollection = async (req, res) => {
+export const addDesignToCollection = async (req, res) => {
     try {
         const { designId } = req.body;
         const collection = await Collection.findOne({
@@ -130,28 +130,28 @@ exports.addDesignToCollection = async (req, res) => {
     }
 };
 
-exports.removeDesignFromCollection = async (req, res) => {
+export const removeDesignFromCollection = async (req, res) => {
     try {
         const collection = await Collection.findOne({
-        where: {
-            id: req.params.id,
-            userId: req.user.id
-        }
+            where: {
+                id: req.params.id,
+                userId: req.user.id
+            }
         });
 
         if (!collection) {
-        return res.status(404).json({ message: 'Collection not found' });
+            return res.status(404).json({ message: 'Collection not found' });
         }
 
         const savedDesign = await SavedDesign.findOne({
-        where: {
-            id: req.params.designId,
-            userId: req.user.id
-        }
+            where: {
+                id: req.params.designId,
+                userId: req.user.id
+            }
         });
 
         if (!savedDesign) {
-        return res.status(404).json({ message: 'Saved design not found' });
+            return res.status(404).json({ message: 'Saved design not found' });
         }
 
         await collection.removeSavedDesign(savedDesign);

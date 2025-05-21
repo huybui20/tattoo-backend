@@ -1,4 +1,4 @@
-const rateLimit = require('express-rate-limit');
+import rateLimit from 'express-rate-limit';
 
 // General API limiter
 const apiLimiter = rateLimit({
@@ -15,7 +15,7 @@ const apiLimiter = rateLimit({
 // Stricter limiter for auth routes
 const authLimiter = rateLimit({
     windowMs: 60 * 60 * 1000, // 1 hour
-    max: 5, // Limit each IP to 5 requests per windowMs
+    max: 10, // Limit each IP to 5 requests per windowMs
     message: {
         status: 'error',
         message: 'Too many login attempts, please try again after an hour'
@@ -36,8 +36,8 @@ const socialAuthLimiter = rateLimit({
     legacyHeaders: false,
 });
 
-module.exports = {
+export {
     apiLimiter,
     authLimiter,
     socialAuthLimiter
-}; 
+};

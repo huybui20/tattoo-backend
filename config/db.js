@@ -1,5 +1,7 @@
-const { Sequelize } = require('sequelize');
-require('dotenv').config();
+import { Sequelize } from 'sequelize';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const sequelize = new Sequelize(
     process.env.DB_NAME,
@@ -11,10 +13,10 @@ const sequelize = new Sequelize(
         dialect: 'postgres',
         logging: false,
         pool: {
-        max: 5,
-        min: 0,
-        acquire: 30000,
-        idle: 10000
+            max: 5,
+            min: 0,
+            acquire: 30000,
+            idle: 10000
         }
     }
 );
@@ -32,4 +34,4 @@ const connectDB = async () => {
     }
 };
 
-module.exports = { sequelize, connectDB };
+export { sequelize, connectDB };

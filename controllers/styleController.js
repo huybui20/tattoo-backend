@@ -1,7 +1,7 @@
-const { Style } = require('../models');
-const { Op } = require('sequelize');
+import { Style } from '../models/index.js';
+import { Op } from 'sequelize';
 
-exports.getStyles = async (req, res) => {
+export const getStyles = async (req, res) => {
     try {
         const styles = await Style.findAll();
         res.json(styles);
@@ -10,7 +10,7 @@ exports.getStyles = async (req, res) => {
     }
 };
 
-exports.getStyleById = async (req, res) => {
+export const getStyleById = async (req, res) => {
     try {
         const style = await Style.findByPk(req.params.id);
         if (!style) {
@@ -22,7 +22,7 @@ exports.getStyleById = async (req, res) => {
     }
 };
 
-exports.createStyle = async (req, res) => {
+export const createStyle = async (req, res) => {
     try {
         const { name, description, imageUrl } = req.body;
 
@@ -43,7 +43,7 @@ exports.createStyle = async (req, res) => {
     }
 };
 
-exports.updateStyle = async (req, res) => {
+export const updateStyle = async (req, res) => {
     try {
         const { name, description, imageUrl } = req.body;
         const style = await Style.findByPk(req.params.id);
@@ -65,13 +65,13 @@ exports.updateStyle = async (req, res) => {
             imageUrl: imageUrl || style.imageUrl
         });
 
-        res.json(style);
+        res.status(201).json(style);
     } catch (error) {
         res.status(400).json({ message: error.message });
     }
 };
 
-exports.deleteStyle = async (req, res) => {
+export const deleteStyle = async (req, res) => {
     try {
         const style = await Style.findByPk(req.params.id);
         if (!style) {

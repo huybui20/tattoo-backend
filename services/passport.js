@@ -1,10 +1,12 @@
-const passport = require('passport');
-const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const FacebookStrategy = require('passport-facebook').Strategy;
-const dotenv = require('dotenv');
+import passport from 'passport';
+import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
+import { Strategy as FacebookStrategy } from 'passport-facebook';
+import dotenv from 'dotenv';
+import { User } from '../models/index.js';
+import { sequelize } from '../config/db.js';
+
 dotenv.config();
-const { User } = require('../models');
-const { sequelize } = require('../config/db');
+
 passport.serializeUser((user, done) => {
     done(null, user.id);
 });
@@ -27,7 +29,8 @@ passport.use(
         async (accessToken, refreshToken, profile, done) => {
             const transaction = await sequelize.transaction();
             try {
-                const existingUser = await User.findOne({ where: { socialId: profile.id },
+                const existingUser = await User.findOne({ 
+                    where: { socialId: profile.id },
                     transaction  
                 });
                 if (existingUser) {
@@ -40,7 +43,7 @@ passport.use(
                     firstName: profile.name.givenName,
                     lastName: profile.name.familyName,
                     socialId: profile.id
-                });
+                }, { transaction });
                 await transaction.commit();
                 done(null, newUser);
             } catch (err) {
@@ -63,14 +66,12 @@ passport.use(
         async (accessToken, refreshToken, profile, done) => {
             const transaction = await sequelize.transaction();
             try {
-                // Check if user exists by Facebook ID
                 let user = await User.findOne({ 
                     where: { socialId: profile.id },
                     transaction 
                 });
 
                 if (!user) {
-                    // Check if user exists by email
                     if (profile.emails && profile.emails[0]) {
                         user = await User.findOne({ 
                             where: { email: profile.emails[0].value },
@@ -79,7 +80,6 @@ passport.use(
                     }
 
                     if (!user) {
-                        // Create new user
                         user = await User.create({
                             email: profile.emails ? profile.emails[0].value : `${profile.id}@facebook.com`,
                             username: profile.name.givenName.toLowerCase() + profile.id.slice(-4),
@@ -88,7 +88,6 @@ passport.use(
                             socialId: profile.id,
                         }, { transaction });
                     } else {
-                        // Update existing user with Facebook ID
                         user.socialId = profile.id;
                         await user.save({ transaction });
                     }
@@ -102,3 +101,5 @@ passport.use(
         }
     )
 );
+
+export default passport;

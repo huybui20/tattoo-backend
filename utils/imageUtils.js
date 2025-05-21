@@ -1,39 +1,22 @@
-const axios = require('axios');
-const fs = require('fs').promises;
-const path = require('path');
-const cloudinary = require('cloudinary').v2;
-const downloadAndSaveImage = async (imageUrl, index, basepath) => {
-    try {
-        // Create uploads directory if it doesn't exist
-        const uploadsDir = path.join(__dirname, '..', 'uploads');
-        await fs.mkdir(uploadsDir, { recursive: true });
-        const filename = `${basepath}_${index}.png`;
-        const filepath = path.join(uploadsDir, filename);
-        // Download image
-        const response = await axios({
-            method: 'GET',
-            url: imageUrl,
-            responseType: 'arraybuffer'
-        });
-        // Save image
-        await fs.writeFile(filepath, response.data);
-        // Return relative path for database storage
-        return `/uploads/${filename}`;
-    } catch (error) {
-        throw new Error(`Failed to download and save image: ${error.message}`);
-    }
-};  
+import { v2 as cloudinary } from 'cloudinary';
+
+// Assuming cloudinary is already configured elsewhere or configure here:
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_NAME,
+    api_key: process.env.CLOUDINARY_KEY,
+    api_secret: process.env.CLOUDINARY_SECRET,
+});
 const uploadToCloudinary = async (imageUrl) => {
     try {
-        const result = await cloudinary.uploader.upload(imageUrl, {
-            folder: 'tattoo-designs',
-            resource_type: 'image'
+        const uploadResponse = await cloudinary.uploader.upload(imageUrl, {
+            folder: 'tattoo-designs', // optional: organize uploads in a folder
+            resource_type: 'image',
         });
-        return result.secure_url;
+        return uploadResponse.secure_url;
     } catch (error) {
-        throw new Error(`Cloudinary upload failed: ${error.message}`);
+        console.error('Cloudinary upload failed:', error);
+        throw error;
     }
 };
-module.exports = {
-    downloadAndSaveImage,uploadToCloudinary
-};
+
+export { uploadToCloudinary };

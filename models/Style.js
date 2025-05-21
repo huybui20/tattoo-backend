@@ -1,5 +1,5 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/db');
+import { DataTypes } from 'sequelize';
+import { sequelize } from '../config/db.js';
 
 const Style = sequelize.define('Style', {
     id: {
@@ -22,4 +22,4 @@ const Style = sequelize.define('Style', {
     }
 });
 
-module.exports = Style;
+export default Style;

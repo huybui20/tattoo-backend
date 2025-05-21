@@ -1,7 +1,7 @@
-const express = require('express');
+import express from 'express';
 const router = express.Router();
-const { protect } = require('../middleware/auth');
-const {
+import { protect } from '../middleware/auth.js';
+import {
     getCollections,
     getCollectionById,
     createCollection,
@@ -9,7 +9,7 @@ const {
     deleteCollection,
     addDesignToCollection,
     removeDesignFromCollection
-} = require('../controllers/collectionController');
+} from '../controllers/collectionController.js';
 
 // All collection routes require authentication
 router.use(protect);
@@ -22,4 +22,4 @@ router.delete('/:id', deleteCollection);
 router.post('/:id/designs', addDesignToCollection);
 router.delete('/:id/designs/:designId', removeDesignFromCollection);
 
-module.exports = router;
+export default router;

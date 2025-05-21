@@ -1,8 +1,8 @@
-const User = require('./User');
-const Style = require('./Style');
-const TattooResult = require('./TattooResult');
-const SavedDesign = require('./SavedDesign');
-const Collection = require('./Collection');
+import User from './User.js';
+import Style from './Style.js';
+import TattooResult from './TattooResult.js';
+import SavedDesign from './SavedDesign.js';
+import Collection from './Collection.js';
 
 // Define associations
 TattooResult.belongsTo(Style, { foreignKey: 'styleId', as: 'style'});
@@ -29,8 +29,9 @@ SavedDesign.belongsToMany(Collection, {
     through: 'CollectionSavedDesign',
     foreignKey: 'savedDesignId',
     as: 'collection' 
-  });
-module.exports = {
+});
+
+export {
     User,
     Style,
     TattooResult,
