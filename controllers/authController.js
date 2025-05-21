@@ -73,6 +73,9 @@ exports.login = async (req, res) => {
         res.status(400).json({ message: error.message });
     }
 };
+export const logout = (req, res) => {
+    res.status(200).json({ message: 'Logged out (JWT token discarded on client)' });
+};
 exports.socialAuthSuccess = async (req, res) =>{
     if (req.user) {
         res.status(200).json({
